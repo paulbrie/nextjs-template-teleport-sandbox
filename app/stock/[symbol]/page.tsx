@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { StockChart } from '@/components/stock-chart';
+import { StockNews } from '@/components/stock-news';
 
 interface DetailedStockData {
   symbol: string;
@@ -271,6 +272,11 @@ export default function StockDetail() {
           </div>
         </div>
 
+
+        {/* News Feed */}
+        <div className="mb-8">
+          <StockNews symbol={symbol} limit={5} />
+        </div>
         {/* Market Status */}
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
           <div className="flex items-center justify-between">

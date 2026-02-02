@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { StocksOverviewChart } from '@/components/stocks-overview-chart';
 import { VolumeChart } from '@/components/volume-chart';
+import { MarketNews } from '@/components/market-news';
 
 interface StockData {
   symbol: string;
@@ -132,6 +133,11 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <StocksOverviewChart stocks={stocks} />
           <VolumeChart stocks={stocks.map(s => ({ symbol: s.symbol, volume: s.volume, price: s.price }))} />
+        </div>
+
+        {/* Market News */}
+        <div className="mb-8">
+          <MarketNews limit={6} />
         </div>
 
         {/* Section Header */}
