@@ -10,7 +10,13 @@ interface StockData {
   changePercent: number;
   volume: number;
   marketCap: number;
+  open: number;
+  high: number;
+  low: number;
+  previousClose: number;
+  vwap: number;
   lastUpdate: string;
+  isMock?: boolean;
 }
 
 export default function Home() {
@@ -53,6 +59,12 @@ export default function Home() {
     const sign = change >= 0 ? '+' : '';
     return `${sign}${change.toFixed(2)} (${sign}${changePercent.toFixed(2)}%)`;
   };
+  const formatVolume = (volume: number) => {
+    if (volume >= 1e9) return `${(volume / 1e9).toFixed(2)}B`;
+    if (volume >= 1e6) return `${(volume / 1e6).toFixed(2)}M`;
+    if (volume >= 1e3) return `${(volume / 1e3).toFixed(2)}K`;
+    return volume.toLocaleString();
+  };
 
   if (loading && stocks.length === 0) {
     return (
@@ -72,7 +84,7 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8">
         <header className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Stock Market Tracker
+            📈 Stock Market Tracker
           </h1>
           <p className="text-gray-600 dark:text-gray-300 text-lg">
             Real-time stock prices updated every 5 seconds
@@ -94,19 +106,26 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
           {symbols.map((symbol) => {
             const stock = stocks.find(s => s.symbol === symbol);
-            const isPositive = stock ? stock.change >= 0 : true;
-            
+            const isPositive = stock ? stock.change >= 0 : false;
+
             return (
               <Link
                 key={symbol}
                 href={`/stock/${symbol}`}
                 className="block transform hover:scale-105 transition-all duration-200"
               >
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl border border-gray-200 dark:border-gray-700 p-6 cursor-pointer">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl border border-gray-200 dark:border-gray-700 p-6 cursor-pointer h-full">
                   <div className="text-center">
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                      {symbol}
-                    </h2>
+                    <div className="flex items-center justify-center mb-4">
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        {symbol}
+                      </h2>
+                      {stock?.isMock && (
+                        <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 px-2 py-1 rounded">
+                          MOCK
+                        </span>
+                      )}
+                    </div>
                     
                     {stock ? (
                       <>
@@ -114,7 +133,7 @@ export default function Home() {
                           {formatPrice(stock.price)}
                         </div>
                         
-                        <div className={`text-sm font-medium ${
+                        <div className={`text-sm font-medium mb-4 ${
                           isPositive 
                             ? 'text-green-600 dark:text-green-400' 
                             : 'text-red-600 dark:text-red-400'
@@ -122,14 +141,14 @@ export default function Home() {
                           {formatChange(stock.change, stock.changePercent)}
                         </div>
                         
-                        <div className="mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                        <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
                           <div className="flex justify-between">
                             <span>Volume:</span>
                             <span className="font-medium">
-                              {stock.volume.toLocaleString()}
+                              {formatVolume(stock.volume)}
                             </span>
                           </div>
-                          {stock.marketCap && (
+                          {stock.marketCap > 0 && (
                             <div className="flex justify-between">
                               <span>Market Cap:</span>
                               <span className="font-medium">
@@ -137,6 +156,24 @@ export default function Home() {
                               </span>
                             </div>
                           )}
+                          <div className="flex justify-between">
+                            <span>High:</span>
+                            <span className="font-medium text-green-600 dark:text-green-400">
+                              {formatPrice(stock.high)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Low:</span>
+                            <span className="font-medium text-red-600 dark:text-red-400">
+                              {formatPrice(stock.low)}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                          <span className="text-xs text-blue-500 dark:text-blue-400 font-medium">
+                            Click for details →
+                          </span>
                         </div>
                       </>
                     ) : (
@@ -158,6 +195,9 @@ export default function Home() {
 
         <footer className="text-center mt-12 text-gray-500 dark:text-gray-400">
           <p>Data provided by Massive API • Updates every 5 seconds</p>
+          <p className="text-sm mt-2">
+            Tracking: AMZN, GOOG, GOOGL, AMD, NVDA
+          </p>
         </footer>
       </div>
     </div>

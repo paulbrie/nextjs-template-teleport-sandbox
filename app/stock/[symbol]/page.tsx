@@ -15,6 +15,7 @@ interface DetailedStockData {
   high: number;
   low: number;
   previousClose: number;
+  vwap: number;
   lastUpdate: string;
   isMock?: boolean;
 }
@@ -69,6 +70,12 @@ export default function StockDetail() {
     const sign = change >= 0 ? '+' : '';
     return `${sign}${change.toFixed(2)} (${sign}${changePercent.toFixed(2)}%)`;
   };
+  const formatVolume = (volume: number) => {
+    if (volume >= 1e9) return `${(volume / 1e9).toFixed(2)}B`;
+    if (volume >= 1e6) return `${(volume / 1e6).toFixed(2)}M`;
+    if (volume >= 1e3) return `${(volume / 1e3).toFixed(2)}K`;
+    return volume.toLocaleString();
+  };
 
   if (loading) {
     return (
@@ -88,16 +95,14 @@ export default function StockDetail() {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">
-            Error Loading Stock Data
+            Error Loading {symbol}
           </h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
-            {error || 'Stock data not available'}
-          </p>
-          <Link
+          <p className="text-gray-600 dark:text-gray-300 mb-6">{error || 'Stock not found'}</p>
+          <Link 
             href="/"
-            className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition-colors"
+            className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
           >
-            Back to Dashboard
+            ← Back to Dashboard
           </Link>
         </div>
       </div>
@@ -109,26 +114,39 @@ export default function StockDetail() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <div className="container mx-auto px-4 py-8">
-        <header className="mb-8">
-          <Link
+        {/* Header */}
+        <div className="mb-8">
+          <Link 
             href="/"
-            className="inline-flex items-center text-blue-500 hover:text-blue-600 mb-4 transition-colors"
+            className="inline-flex items-center text-blue-500 hover:text-blue-600 font-semibold mb-4 transition-colors"
           >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
             Back to Dashboard
           </Link>
           
           <div className="flex items-center justify-between">
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
-              {stock.symbol}
-            </h1>
-            {stock.isMock && (
-              <span className="bg-yellow-100 text-yellow-800 text-sm font-medium px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">
-                Mock Data
-              </span>
-            )}
+            <div>
+              <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-2">
+                {stock.symbol}
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400">
+                Real-time stock data
+              </p>
+            </div>
+            <div className="text-right">
+              <div className="text-4xl font-bold text-gray-900 dark:text-white">
+                {formatPrice(stock.price)}
+              </div>
+              <div className={`text-lg font-medium ${
+                isPositive 
+                  ? 'text-green-600 dark:text-green-400' 
+                  : 'text-red-600 dark:text-red-400'
+              }`}>
+                {formatChange(stock.change, stock.changePercent)}
+              </div>
+            </div>
           </div>
           
           {lastUpdate && (
@@ -136,55 +154,22 @@ export default function StockDetail() {
               Last updated: {lastUpdate}
             </p>
           )}
-        </header>
+        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Price Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
+        {/* Stock Detail Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Price Info Card */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
             <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">
-              Current Price
+              Price Information
             </h2>
-            <div className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
-              {formatPrice(stock.price)}
-            </div>
-            <div className={`text-xl font-semibold ${
-              isPositive 
-                ? 'text-green-600 dark:text-green-400' 
-                : 'text-red-600 dark:text-red-400'
-            }`}>
-              {formatChange(stock.change, stock.changePercent)}
-            </div>
-          </div>
-
-          {/* Market Stats Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
-            <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">
-              Market Statistics
-            </h2>
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-gray-600 dark:text-gray-400">Volume</span>
+                <span className="text-gray-600 dark:text-gray-400">Current Price</span>
                 <span className="font-semibold text-gray-900 dark:text-white">
-                  {stock.volume.toLocaleString()}
+                  {formatPrice(stock.price)}
                 </span>
               </div>
-              {stock.marketCap > 0 && (
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600 dark:text-gray-400">Market Cap</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    ${(stock.marketCap / 1e9).toFixed(2)}B
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Daily Range Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
-            <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">
-              Today's Range
-            </h2>
-            <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-gray-600 dark:text-gray-400">Open</span>
                 <span className="font-semibold text-gray-900 dark:text-white">
@@ -209,15 +194,23 @@ export default function StockDetail() {
                   {formatPrice(stock.previousClose)}
                 </span>
               </div>
+              {stock.vwap > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600 dark:text-gray-400">VWAP</span>
+                  <span className="font-semibold text-blue-600 dark:text-blue-400">
+                    {formatPrice(stock.vwap)}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Performance Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
             <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">
               Performance Overview
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-gray-600 dark:text-gray-400">Change</span>
                 <span className={`font-semibold ${
@@ -225,7 +218,7 @@ export default function StockDetail() {
                     ? 'text-green-600 dark:text-green-400' 
                     : 'text-red-600 dark:text-red-400'
                 }`}>
-                  {formatPrice(Math.abs(stock.change))} ({Math.abs(stock.changePercent).toFixed(2)}%)
+                  {formatChange(stock.change, stock.changePercent)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
@@ -244,12 +237,72 @@ export default function StockDetail() {
                 </div>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-600 dark:text-gray-400">Range (H-L)</span>
+                <span className="text-gray-600 dark:text-gray-400">Day Range</span>
                 <span className="font-semibold text-gray-900 dark:text-white">
                   {formatPrice(stock.high - stock.low)}
                 </span>
               </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 dark:text-gray-400">Volume</span>
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  {formatVolume(stock.volume)}
+                </span>
+              </div>
             </div>
+          </div>
+
+          {/* Status Card */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+            <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">
+              Market Status
+            </h2>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 dark:text-gray-400">Symbol</span>
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  {stock.symbol}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 dark:text-gray-400">Last Update</span>
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  {new Date(stock.lastUpdate).toLocaleTimeString()}
+                </span>
+              </div>
+              <div className="flex items-center justify-between mt-4">
+                <div className={`px-4 py-2 rounded-full font-semibold ${
+                  isPositive 
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                }`}>
+                  {isPositive ? '📈 Bullish' : '📉 Bearish'}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Visual Indicator */}
+        <div className="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+          <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">
+            Price Movement
+          </h2>
+          <div className="relative h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div 
+              className={`absolute h-full transition-all duration-500 ${
+                isPositive ? 'bg-green-500' : 'bg-red-500'
+              }`}
+              style={{ 
+                width: `${Math.min(Math.abs(stock.changePercent) * 5, 100)}%`,
+                left: isPositive ? '50%' : `${50 - Math.min(Math.abs(stock.changePercent) * 5, 50)}%`
+              }}
+            />
+            <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gray-400"></div>
+          </div>
+          <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400 mt-2">
+            <span>Down</span>
+            <span>0%</span>
+            <span>Up</span>
           </div>
         </div>
 

@@ -1,7 +1,57 @@
 import { NextResponse } from 'next/server';
-import { MassiveClient } from '@massive.com/client-js';
 
 const symbols = ['AMZN', 'GOOG', 'GOOGL', 'AMD', 'NVDA'];
+
+// Massive API (formerly Polygon.io) base URL
+const MASSIVE_API_BASE = 'https://api.massive.com';
+
+interface MassiveSnapshotResponse {
+  ticker?: {
+    ticker?: string;
+    day?: {
+      o?: number;  // open
+      h?: number;  // high
+      l?: number;  // low
+      c?: number;  // close
+      v?: number;  // volume
+      vw?: number; // volume weighted average price
+    };
+    prevDay?: {
+      c?: number;  // previous close
+    };
+    min?: {
+      c?: number;  // current price (last minute close)
+    };
+    todaysChange?: number;
+    todaysChangePerc?: number;
+    updated?: number;
+  };
+}
+
+async function fetchStockSnapshot(symbol: string, apiKey: string): Promise<MassiveSnapshotResponse | null> {
+  try {
+    // Using the Massive Snapshot API to get real-time stock data
+    const url = `${MASSIVE_API_BASE}/v2/snapshot/locale/us/markets/stocks/tickers/${symbol}?apiKey=${apiKey}`;
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      console.error(`Error fetching ${symbol}: ${response.status} ${response.statusText}`);
+      return null;
+    }
+
+    const data = await response.json();
+    return data as MassiveSnapshotResponse;
+  } catch (error) {
+    console.error(`Error fetching data for ${symbol}:`, error);
+    return null;
+  }
+}
 
 export async function GET() {
   try {
@@ -14,32 +64,41 @@ export async function GET() {
       );
     }
 
-    const client = new MassiveClient(apiKey);
     const stocks = [];
 
     // Fetch data for each symbol
     for (const symbol of symbols) {
       try {
-        // Using the Massive API to get real-time stock data
-        const response = await client.stocks.getQuote(symbol);
+        const response = await fetchStockSnapshot(symbol, apiKey);
         
-        if (response && response.data) {
-          const stockData = response.data;
+        if (response && response.ticker) {
+          const ticker = response.ticker;
+          const dayData = ticker.day || {};
+          const prevDay = ticker.prevDay || {};
+          const minData = ticker.min || {};
+          
+          // Current price - use minute close if available, otherwise day close
+          const currentPrice = minData.c || dayData.c || 0;
+          const previousClose = prevDay.c || 0;
+          const change = ticker.todaysChange || (currentPrice - previousClose);
+          const changePercent = ticker.todaysChangePerc || (previousClose > 0 ? (change / previousClose) * 100 : 0);
           
           stocks.push({
             symbol,
-            price: stockData.price || 0,
-            change: stockData.change || 0,
-            changePercent: stockData.changePercent || 0,
-            volume: stockData.volume || 0,
-            marketCap: stockData.marketCap || 0,
-            lastUpdate: new Date().toISOString(),
-            // Additional data for detail page
-            open: stockData.open || 0,
-            high: stockData.high || 0,
-            low: stockData.low || 0,
-            previousClose: stockData.previousClose || 0,
+            price: currentPrice,
+            change: change,
+            changePercent: changePercent,
+            volume: dayData.v || 0,
+            marketCap: 0, // Not directly available from snapshot
+            lastUpdate: ticker.updated ? new Date(ticker.updated).toISOString() : new Date().toISOString(),
+            open: dayData.o || 0,
+            high: dayData.h || 0,
+            low: dayData.l || 0,
+            previousClose: previousClose,
+            vwap: dayData.vw || 0,
           });
+        } else {
+          throw new Error(`No data returned for ${symbol}`);
         }
       } catch (stockError) {
         console.error(`Error fetching data for ${symbol}:`, stockError);
