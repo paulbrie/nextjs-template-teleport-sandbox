@@ -10,11 +10,13 @@
     "test": "PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true playwright test"
   },
   "dependencies": {
+    "@massive.com/client-js": "github:massive-com/client-js",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
