@@ -13,8 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Stock Market Tracker",
-  description: "Real-time stock prices from Massive API",
+  title: "MarketPulse | Real-Time Stock Tracker",
+  description: "Professional real-time stock market tracking with live prices, market data, and financial insights",
+  keywords: ["stocks", "market", "finance", "trading", "real-time", "NVDA", "AMD", "GOOG", "AMZN"],
 };
 
 export default function RootLayout({
@@ -25,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-slate-950`}
       >
         {children}
       </body>

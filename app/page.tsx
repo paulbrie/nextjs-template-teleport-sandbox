@@ -19,13 +19,19 @@ interface StockData {
   isMock?: boolean;
 }
 
+const stockLogos: Record<string, string> = {
+  AMZN: 'https://logo.clearbit.com/amazon.com',
+  GOOG: 'https://logo.clearbit.com/google.com',
+  GOOGL: 'https://logo.clearbit.com/google.com',
+  AMD: 'https://logo.clearbit.com/amd.com',
+  NVDA: 'https://logo.clearbit.com/nvidia.com',
+};
+
 export default function Home() {
   const [stocks, setStocks] = useState<StockData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<string>('');
-
-  const symbols = ['AMZN', 'GOOG', 'GOOGL', 'AMD', 'NVDA'];
 
   const fetchStockData = async () => {
     try {
@@ -45,12 +51,8 @@ export default function Home() {
   };
 
   useEffect(() => {
-    // Initial fetch
     fetchStockData();
-
-    // Set up interval to fetch every 5 seconds
     const interval = setInterval(fetchStockData, 5000);
-
     return () => clearInterval(interval);
   }, []);
 
@@ -65,14 +67,22 @@ export default function Home() {
     if (volume >= 1e3) return `${(volume / 1e3).toFixed(2)}K`;
     return volume.toLocaleString();
   };
+  const formatMarketCap = (cap: number) => {
+    if (cap >= 1e12) return `$${(cap / 1e12).toFixed(2)}T`;
+    if (cap >= 1e9) return `$${(cap / 1e9).toFixed(2)}B`;
+    return `$${(cap / 1e6).toFixed(2)}M`;
+  };
 
   if (loading && stocks.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500 mx-auto"></div>
-          <h2 className="text-xl font-semibold mt-4 text-gray-700 dark:text-gray-300">
-            Loading stock data...
+          <div className="relative w-20 h-20 mx-auto mb-6">
+            <div className="absolute inset-0 border-4 border-blue-500/20 rounded-full"></div>
+            <div className="absolute inset-0 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+          <h2 className="text-xl font-medium text-slate-300">
+            Loading market data...
           </h2>
         </div>
       </div>
@@ -80,112 +90,154 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto px-4 py-8">
-        <header className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            📈 Stock Market Tracker
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300 text-lg">
-            Real-time stock prices updated every 5 seconds
-          </p>
-          {lastUpdate && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-              Last updated: {lastUpdate}
-            </p>
-          )}
-        </header>
+    <div className="min-h-screen bg-slate-950">
+      {/* Header */}
+      <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-xl sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-violet-600 rounded-xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-white">MarketPulse</h1>
+                <p className="text-xs text-slate-400">Real-Time Tracker</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="hidden sm:flex items-center gap-2 text-sm text-slate-400">
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                Live Updates
+              </div>
+              {lastUpdate && (
+                <span className="text-xs text-slate-500">
+                  Last update: {lastUpdate}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
 
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Hero Section */}
+        <div className="mb-10">
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+            Market <span className="gradient-text">Overview</span>
+          </h2>
+          <p className="text-slate-400 text-lg">
+            Track your favorite stocks with real-time data updates
+          </p>
+        </div>
+
+        {/* Error Message */}
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6 max-w-2xl mx-auto">
-            <strong className="font-bold">Error: </strong>
-            <span className="block sm:inline">{error}</span>
+          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+            {error}
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-          {symbols.map((symbol) => {
-            const stock = stocks.find(s => s.symbol === symbol);
-            const isPositive = stock ? stock.change >= 0 : false;
+        {/* Stock Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {stocks.map((stock, index) => {
+            const isPositive = stock.change >= 0;
+            const delay = index * 100;
 
             return (
               <Link
-                key={symbol}
-                href={`/stock/${symbol}`}
-                className="block transform hover:scale-105 transition-all duration-200"
+                key={stock.symbol}
+                href={`/stock/${stock.symbol}`}
+                className="group animate-fade-in"
+                style={{ animationDelay: `${delay}ms` }}
               >
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl border border-gray-200 dark:border-gray-700 p-6 cursor-pointer h-full">
-                  <div className="text-center">
-                    <div className="flex items-center justify-center mb-4">
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {symbol}
-                      </h2>
-                      {stock?.isMock && (
-                        <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 px-2 py-1 rounded">
-                          MOCK
-                        </span>
-                      )}
-                    </div>
-                    
-                    {stock ? (
-                      <>
-                        <div className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">
-                          {formatPrice(stock.price)}
-                        </div>
-                        
-                        <div className={`text-sm font-medium mb-4 ${
-                          isPositive 
-                            ? 'text-green-600 dark:text-green-400' 
-                            : 'text-red-600 dark:text-red-400'
-                        }`}>
-                          {formatChange(stock.change, stock.changePercent)}
-                        </div>
-                        
-                        <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-                          <div className="flex justify-between">
-                            <span>Volume:</span>
-                            <span className="font-medium">
-                              {formatVolume(stock.volume)}
-                            </span>
-                          </div>
-                          {stock.marketCap > 0 && (
-                            <div className="flex justify-between">
-                              <span>Market Cap:</span>
-                              <span className="font-medium">
-                                ${(stock.marketCap / 1e9).toFixed(2)}B
-                              </span>
-                            </div>
-                          )}
-                          <div className="flex justify-between">
-                            <span>High:</span>
-                            <span className="font-medium text-green-600 dark:text-green-400">
-                              {formatPrice(stock.high)}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Low:</span>
-                            <span className="font-medium text-red-600 dark:text-red-400">
-                              {formatPrice(stock.low)}
-                            </span>
-                          </div>
-                        </div>
-                        
-                        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                          <span className="text-xs text-blue-500 dark:text-blue-400 font-medium">
-                            Click for details →
-                          </span>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="animate-pulse">
-                        <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
-                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
-                        <div className="space-y-2">
-                          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                        </div>
+                <div className="card-hover bg-slate-900 border border-slate-800 rounded-2xl p-6 h-full">
+                  {/* Stock Header */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center overflow-hidden">
+                        {stockLogos[stock.symbol] ? (
+                          <img
+                            src={stockLogos[stock.symbol]}
+                            alt={stock.symbol}
+                            className="w-8 h-8 object-contain"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                              (e.target as HTMLImageElement).parentElement!.innerHTML = `<span class="text-lg font-bold text-slate-400">${stock.symbol[0]}</span>`;
+                            }}
+                          />
+                        ) : (
+                          <span className="text-lg font-bold text-slate-400">{stock.symbol[0]}</span>
+                        )}
                       </div>
-                    )}
+                      <div>
+                        <h3 className="text-lg font-bold text-white">{stock.symbol}</h3>
+                        <p className="text-xs text-slate-500">{stock.isMock ? 'Demo Data' : 'Live'}</p>
+                      </div>
+                    </div>
+                    <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      isPositive
+                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                        : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                    }`}>
+                      {isPositive ? '▲' : '▼'} {Math.abs(stock.changePercent).toFixed(2)}%
+                    </div>
+                  </div>
+
+                  {/* Price */}
+                  <div className="mb-4">
+                    <span className="text-3xl font-bold text-white">
+                      {formatPrice(stock.price)}
+                    </span>
+                    <span className={`ml-2 text-sm font-medium ${
+                      isPositive ? 'text-emerald-400' : 'text-red-400'
+                    }`}>
+                      {formatChange(stock.change, stock.changePercent)}
+                    </span>
+                  </div>
+
+                  {/* Mini Chart Placeholder */}
+                  <div className="h-12 mb-4 flex items-end gap-1">
+                    {Array.from({ length: 20 }).map((_, i) => {
+                      const height = 30 + Math.random() * 70;
+                      return (
+                        <div
+                          key={i}
+                          className={`flex-1 rounded-sm ${isPositive ? 'bg-emerald-500/30' : 'bg-red-500/30'}`}
+                          style={{ height: `${height}%` }}
+                        />
+                      );
+                    })}
+                  </div>
+
+                  {/* Stats Grid */}
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="bg-slate-800/50 rounded-lg p-3">
+                      <p className="text-slate-500 text-xs mb-1">Volume</p>
+                      <p className="text-slate-300 font-medium">{formatVolume(stock.volume)}</p>
+                    </div>
+                    <div className="bg-slate-800/50 rounded-lg p-3">
+                      <p className="text-slate-500 text-xs mb-1">Market Cap</p>
+                      <p className="text-slate-300 font-medium">{formatMarketCap(stock.marketCap)}</p>
+                    </div>
+                    <div className="bg-slate-800/50 rounded-lg p-3">
+                      <p className="text-slate-500 text-xs mb-1">High</p>
+                      <p className="text-emerald-400 font-medium">{formatPrice(stock.high)}</p>
+                    </div>
+                    <div className="bg-slate-800/50 rounded-lg p-3">
+                      <p className="text-slate-500 text-xs mb-1">Low</p>
+                      <p className="text-red-400 font-medium">{formatPrice(stock.low)}</p>
+                    </div>
+                  </div>
+
+                  {/* Hover Indicator */}
+                  <div className="mt-4 pt-4 border-t border-slate-800 flex items-center justify-between">
+                    <span className="text-xs text-slate-500">Click for details</span>
+                    <svg className="w-4 h-4 text-slate-600 group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </div>
                 </div>
               </Link>
@@ -193,13 +245,19 @@ export default function Home() {
           })}
         </div>
 
-        <footer className="text-center mt-12 text-gray-500 dark:text-gray-400">
-          <p>Data provided by Massive API • Updates every 5 seconds</p>
-          <p className="text-sm mt-2">
-            Tracking: AMZN, GOOG, GOOGL, AMD, NVDA
-          </p>
+        {/* Footer */}
+        <footer className="mt-16 pt-8 border-t border-slate-800">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-slate-500">
+              Data updates every 5 seconds • Powered by Massive API
+            </p>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+              <span className="text-sm text-slate-500">System Operational</span>
+            </div>
+          </div>
         </footer>
-      </div>
+      </main>
     </div>
   );
 }
