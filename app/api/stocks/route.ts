@@ -24,7 +24,7 @@ interface MassiveSnapshotResponse {
     };
     todaysChange?: number;
     todaysChangePerc?: number;
-    updated?: number;
+    updated?: number; // Unix timestamp in milliseconds
   };
 }
 
@@ -83,6 +83,18 @@ export async function GET() {
           const change = ticker.todaysChange || (currentPrice - previousClose);
           const changePercent = ticker.todaysChangePerc || (previousClose > 0 ? (change / previousClose) * 100 : 0);
           
+          // Handle the timestamp - it's a Unix timestamp in milliseconds
+          let lastUpdate: string;
+          try {
+            if (ticker.updated && typeof ticker.updated === 'number') {
+              lastUpdate = new Date(ticker.updated).toISOString();
+            } else {
+              lastUpdate = new Date().toISOString();
+            }
+          } catch (e) {
+            lastUpdate = new Date().toISOString();
+          }
+          
           stocks.push({
             symbol,
             price: currentPrice,
@@ -90,7 +102,7 @@ export async function GET() {
             changePercent: changePercent,
             volume: dayData.v || 0,
             marketCap: 0, // Not directly available from snapshot
-            lastUpdate: ticker.updated ? new Date(ticker.updated).toISOString() : new Date().toISOString(),
+            lastUpdate: lastUpdate,
             open: dayData.o || 0,
             high: dayData.h || 0,
             low: dayData.l || 0,
