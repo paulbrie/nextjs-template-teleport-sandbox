@@ -3,9 +3,19 @@ import { Client } from "pg";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { hash } from "bcryptjs";
+import { config } from "dotenv";
+
+// Load environment variables from .env file
+config({ path: ".env" });
 
 async function seed() {
-  const databaseUrl = process.env.DATABASE_URL || "postgresql://appuser:postgres@localhost:5432/myapp";
+  // Use the DATABASE_URL from environment, which is already set correctly
+  const databaseUrl = process.env.DATABASE_URL;
+  
+  if (!databaseUrl) {
+    console.error("❌ DATABASE_URL environment variable is not set");
+    process.exit(1);
+  }
   
   const client = new Client({
     connectionString: databaseUrl,

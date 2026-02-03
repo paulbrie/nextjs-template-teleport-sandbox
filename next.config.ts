@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  allowedDevOrigins: ["sb-6ay2opq1hs8g.vercel.run", "localhost:3000"],
 };
 
 export default nextConfig;
