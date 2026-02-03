@@ -6,8 +6,8 @@ test.describe("Login Functionality", () => {
   test("login page loads with form elements", async ({ page }) => {
     await page.goto(`${BASE_URL}/login`);
     
-    // Check page title - the app uses "My App" as default title
-    await expect(page).toHaveTitle(/My App/);
+    // Check page title - the app uses "Stock Market Tracker" as title
+    await expect(page).toHaveTitle(/Stock Market Tracker/);
     
     // Check header
     await expect(page.getByText("🔐 Login")).toBeVisible();
@@ -81,7 +81,10 @@ test.describe("Login Functionality", () => {
     
     // Verify we're back on the homepage
     await expect(page).toHaveURL(BASE_URL);
-    await expect(page.getByText("Welcome to My App")).toBeVisible();
+    // Check the homepage title - Stock Market Tracker
+    await expect(page).toHaveTitle(/Stock Market Tracker/);
+    // Check for the main heading on the homepage
+    await expect(page.getByText("📈 Stock Market Tracker")).toBeVisible();
   });
 
   test("login page shows loading state while submitting", async ({ page }) => {

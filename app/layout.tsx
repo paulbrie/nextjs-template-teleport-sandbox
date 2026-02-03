@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "My App",
-  description: "A secure application with authentication",
+  title: "Stock Market Tracker",
+  description: "Real-time stock prices from Massive API",
 };
 
 export default function RootLayout({
