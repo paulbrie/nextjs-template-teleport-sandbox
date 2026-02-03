@@ -1,12 +1,17 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function ProfilePage() {
-  const { data: session, status, update } = useSession();
+  const sessionResult = useSession();
+  const session = sessionResult?.data;
+  const status = sessionResult?.status;
+  const update = sessionResult?.update;
   const router = useRouter();
   
   const [name, setName] = useState('');
