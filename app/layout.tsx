@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "My App - Authentication Demo",
-  description: "A secure application with authentication",
+  title: "My App - Login System",
+  description: "A Next.js app with authentication",
 };
 
 export default function RootLayout({
@@ -25,10 +25,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <Providers>{children}</Providers>
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

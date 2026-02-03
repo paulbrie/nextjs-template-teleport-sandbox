@@ -1,100 +1,85 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import Link from "next/link";
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../lib/auth';
+import Link from 'next/link';
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      {/* Navigation */}
-      <nav className="bg-slate-900 border-b border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <h1 className="text-xl font-bold text-white">My App</h1>
-            <div className="flex items-center space-x-4">
+    <div style={{minHeight: '100vh', backgroundColor: '#f9fafb'}}>
+      {/* Header */}
+      <header style={{backgroundColor: '#ffffff', borderBottom: '1px solid #e5e7eb'}}>
+        <div className="container" style={{padding: '1rem'}}>
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+            <h1 style={{fontSize: '1.5rem', fontWeight: 'bold'}}>🏠 My App</h1>
+            <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
               {session ? (
                 <>
-                  <span className="text-slate-300">
-                    Hello, {session.user?.name}
-                  </span>
-                  <Link
-                    href="/dashboard"
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                  >
+                  <span>Welcome, {session.user?.name || session.user?.email}</span>
+                  <Link href="/dashboard" style={{color: '#2563eb', textDecoration: 'none'}}>
                     Dashboard
+                  </Link>
+                  <Link href="/profile" style={{color: '#2563eb', textDecoration: 'none'}}>
+                    Profile
+                  </Link>
+                  <Link href="/api/auth/signout" style={{color: '#2563eb', textDecoration: 'none'}}>
+                    Logout
                   </Link>
                 </>
               ) : (
-                <Link
-                  href="/login"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                >
-                  Sign In
-                </Link>
+                <>
+                  <Link href="/login" style={{color: '#2563eb', textDecoration: 'none'}}>
+                    Login
+                  </Link>
+                </>
               )}
             </div>
           </div>
         </div>
-      </nav>
+      </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <h1 className="text-4xl font-extrabold text-white sm:text-5xl md:text-6xl">
-            Welcome to the App
-          </h1>
-          <p className="mt-3 max-w-md mx-auto text-base text-slate-400 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-            A secure application with authentication and user management.
+      {/* Hero Section */}
+      <main style={{padding: '4rem 1rem', textAlign: 'center'}}>
+        <div className="container">
+          <h2 style={{fontSize: '2.25rem', fontWeight: 'bold', marginBottom: '1rem'}}>
+            Welcome to My App
+          </h2>
+          <p style={{fontSize: '1.125rem', color: '#6b7280', marginBottom: '2rem'}}>
+            A Next.js application with authentication and dashboard
           </p>
-          
-          <div className="mt-10 flex justify-center gap-4">
-            {session ? (
-              <Link
-                href="/dashboard"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg text-lg font-medium transition-colors"
-              >
+
+          {session ? (
+            <div style={{display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap'}}>
+              <Link href="/dashboard" style={{padding: '0.75rem 1.5rem', backgroundColor: '#2563eb', color: '#ffffff', textDecoration: 'none', borderRadius: '0.375rem', fontWeight: '500'}}>
                 Go to Dashboard
               </Link>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg text-lg font-medium transition-colors"
-                >
-                  Sign In
-                </Link>
-                <div className="text-slate-400 flex items-center">
-                  <span>or</span>
-                </div>
-                <div className="text-slate-400 flex items-center text-sm">
-                  <span>Demo: paul.brie@teleporthq.io / admin</span>
-                </div>
-              </>
-            )}
-          </div>
+              <Link href="/profile" style={{padding: '0.75rem 1.5rem', backgroundColor: '#10b981', color: '#ffffff', textDecoration: 'none', borderRadius: '0.375rem', fontWeight: '500'}}>
+                View Profile
+              </Link>
+            </div>
+          ) : (
+            <div style={{display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap'}}>
+              <Link href="/login" style={{padding: '0.75rem 1.5rem', backgroundColor: '#2563eb', color: '#ffffff', textDecoration: 'none', borderRadius: '0.375rem', fontWeight: '500'}}>
+                Login
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Features */}
-        <div className="mt-20">
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-              <h3 className="text-lg font-semibold text-white mb-2">Secure Login</h3>
-              <p className="text-slate-400">
-                Email and password authentication with secure session management.
-              </p>
+        <div style={{marginTop: '4rem', maxWidth: '800px', margin: '4rem auto 0'}}>
+          <div style={{display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))'}}>
+            <div style={{backgroundColor: '#ffffff', padding: '1.5rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)'}}>
+              <h3 style={{fontWeight: 'bold', marginBottom: '0.5rem'}}>🔐 Secure Login</h3>
+              <p style={{color: '#6b7280'}}>Email and password authentication using bcrypt and JWT</p>
             </div>
-            <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-              <h3 className="text-lg font-semibold text-white mb-2">Protected Routes</h3>
-              <p className="text-slate-400">
-                Dashboard and profile pages are protected and require authentication.
-              </p>
+            <div style={{backgroundColor: '#ffffff', padding: '1.5rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)'}}>
+              <h3 style={{fontWeight: 'bold', marginBottom: '0.5rem'}}>📊 Dashboard</h3>
+              <p style={{color: '#6b7280'}}>Protected route accessible only to authenticated users</p>
             </div>
-            <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-              <h3 className="text-lg font-semibold text-white mb-2">Profile Management</h3>
-              <p className="text-slate-400">
-                Update your name and change your password securely.
-              </p>
+            <div style={{backgroundColor: '#ffffff', padding: '1.5rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)'}}>
+              <h3 style={{fontWeight: 'bold', marginBottom: '0.5rem'}}>👤 Profile</h3>
+              <p style={{color: '#6b7280'}}>Update your name and change your password</p>
             </div>
           </div>
         </div>

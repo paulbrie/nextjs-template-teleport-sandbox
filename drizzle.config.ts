@@ -2,9 +2,9 @@ import { defineConfig } from 'drizzle-kit';
 
 export default defineConfig({
   out: './drizzle',
-  schema: './src/db/schema.ts',
+  schema: './db/schema.ts',
   dialect: 'postgresql',
   dbCredentials: {
-    url: process.env.DATABASE_URL || 'postgresql://vercel-sandbox@127.0.0.1:5432/myapp',
+    url: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/myapp',
   },
 });

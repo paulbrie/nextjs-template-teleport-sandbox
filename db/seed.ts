@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import * as schema from "./schema";
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || "postgres://postgres:postgres@localhost:5432/myapp",
+  connectionString: process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/myapp",
 });
 
 const db = drizzle(pool, { schema });
@@ -30,6 +30,7 @@ async function seed() {
     email: "paul.brie@teleporthq.io",
     name: "Paul Brie",
     password: hashedPassword,
+    role: "admin",
   });
 
   console.log("Admin user created successfully!");
