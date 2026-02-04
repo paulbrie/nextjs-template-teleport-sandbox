@@ -40,22 +40,57 @@ test.describe("Stock Market Tracker", () => {
     expect(Array.isArray(data.stocks)).toBe(true);
     expect(data.stocks.length).toBeGreaterThan(0);
     
-    const stock = data.stocks[0];
-    expect(stock).toHaveProperty('symbol');
-    expect(stock).toHaveProperty('price');
-    expect(stock).toHaveProperty('change');
-    expect(stock).toHaveProperty('changePercent');
-    expect(stock).toHaveProperty('volume');
-    expect(stock).toHaveProperty('lastUpdate');
-    expect(stock).toHaveProperty('open');
-    expect(stock).toHaveProperty('high');
-    expect(stock).toHaveProperty('low');
+    // Check that we have data for all expected symbols
+    const symbols = ['AMZN', 'GOOG', 'GOOGL', 'AMD', 'NVDA'];
+    const returnedSymbols = data.stocks.map((s: any) => s.symbol);
+    for (const symbol of symbols) {
+      expect(returnedSymbols).toContain(symbol);
+    }
     
-    expect(typeof stock.price).toBe('number');
-    expect(stock.price).toBeGreaterThan(0);
-    expect(typeof stock.change).toBe('number');
-    expect(typeof stock.changePercent).toBe('number');
-    expect(stock.lastUpdate).toBeTruthy();
+    // Verify each stock has proper structure and data from Massive API
+    for (const stock of data.stocks) {
+      expect(stock).toHaveProperty('symbol');
+      expect(stock).toHaveProperty('price');
+      expect(stock).toHaveProperty('change');
+      expect(stock).toHaveProperty('changePercent');
+      expect(stock).toHaveProperty('volume');
+      expect(stock).toHaveProperty('lastUpdate');
+      expect(stock).toHaveProperty('open');
+      expect(stock).toHaveProperty('high');
+      expect(stock).toHaveProperty('low');
+      
+      expect(typeof stock.price).toBe('number');
+      expect(stock.price).toBeGreaterThan(0);
+      expect(typeof stock.change).toBe('number');
+      expect(typeof stock.changePercent).toBe('number');
+      expect(stock.lastUpdate).toBeTruthy();
+      
+      // Verify the data is not marked as mock - this ensures it's from Massive API
+      expect(stock.isMock).not.toBe(true);
+    }
+  });
+
+  test("stock cards show data from Massive API in UI", async ({ page }) => {
+    await page.goto(BASE_URL);
+    
+    // Wait for stock cards to load
+    await page.waitForSelector("text=AMZN");
+    
+    // Check that stock cards have prices (showing real data)
+    const amznCard = page.locator('a[href*="/stock/AMZN"]').first();
+    
+    // Verify the card contains a dollar amount (price)
+    const priceText = await amznCard.locator('text=/\\$\\d+/').textContent();
+    expect(priceText).toMatch(/\$\d+\.\d+/);
+    
+    // Extract the price and verify it's a reasonable stock price
+    const priceMatch = priceText?.match(/\$(\d+\.\d+)/);
+    if (priceMatch) {
+      const price = parseFloat(priceMatch[1]);
+      expect(price).toBeGreaterThan(0);
+      // AMZN typically trades above $100
+      expect(price).toBeGreaterThan(50);
+    }
   });
 
   test("clicking on stock card navigates to detail page", async ({ page }) => {
